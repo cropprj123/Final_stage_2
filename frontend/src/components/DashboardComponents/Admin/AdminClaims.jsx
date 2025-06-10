@@ -237,6 +237,20 @@ const AdminClaims = () => {
     saveAs(blob, "claims_data.csv");
   };
 
+  // Helper to extract weather info from claim.note
+  function extractWeatherFromNote(note) {
+    if (!note) return {};
+    // Example: "Weather: Temp 32.1°C, Rain 0mm | ..."
+    const tempMatch = note.match(/Temp\s+([0-9.]+)°C/);
+    const rainMatch = note.match(/Rain\s+([0-9.]+)mm/);
+    const humidityMatch = note.match(/Humidity\s+([0-9.]+)%/);
+    return {
+      temperature: tempMatch ? tempMatch[1] : null,
+      rainfall: rainMatch ? rainMatch[1] : null,
+      humidity: humidityMatch ? humidityMatch[1] : null,
+    };
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-50">
@@ -565,27 +579,38 @@ const AdminClaims = () => {
                         <h4 className="text-lg font-semibold text-gray-800 mb-4">
                           Weather Conditions
                         </h4>
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <ThermometerSun className="w-5 h-5 text-gray-400" />
-                            <span>
-                              Temperature:{" "}
-                              {claim.weatherData?.temperature?.toFixed(1)}°C
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Droplets className="w-5 h-5 text-gray-400" />
-                            <span>
-                              Rainfall: {claim.weatherData?.rainfall} mm
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Wind className="w-5 h-5 text-gray-400" />
-                            <span>
-                              Humidity: {claim.weatherData?.humidity}%
-                            </span>
-                          </div>
-                        </div>
+                        {(() => {
+                          const weather =
+                            claim.weatherData && claim.weatherData.temperature != null
+                              ? {
+                                  temperature: claim.weatherData.temperature,
+                                  rainfall: claim.weatherData.rainfall,
+                                  humidity: claim.weatherData.humidity,
+                                }
+                              : extractWeatherFromNote(claim.note);
+                          return (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <ThermometerSun className="w-5 h-5 text-gray-400" />
+                                <span>
+                                  Temperature: {weather.temperature !== null && weather.temperature !== undefined ? `${weather.temperature}°C` : "N/A"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Droplets className="w-5 h-5 text-gray-400" />
+                                <span>
+                                  Rainfall: {weather.rainfall !== null && weather.rainfall !== undefined ? `${weather.rainfall} mm` : "N/A"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Wind className="w-5 h-5 text-gray-400" />
+                                <span>
+                                  Humidity: {weather.humidity !== null && weather.humidity !== undefined ? `${weather.humidity}%` : "N/A"}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Assessment Details */}
@@ -598,14 +623,21 @@ const AdminClaims = () => {
                             <p className="text-sm text-gray-500">Location Check</p>
                             <p
                               className={`font-medium ${
-                                claim.thresholdResults?.locationVerified
+                                (claim.thresholdResults && claim.thresholdResults.locationVerified) ||
+                                (!claim.thresholdResults && /Location: PASSED/.test(claim.note))
                                   ? "text-green-600"
                                   : "text-red-600"
                               }`}
                             >
-                              {claim.thresholdResults?.locationVerified
+                              {claim.thresholdResults && typeof claim.thresholdResults.locationVerified !== 'undefined'
+                                ? claim.thresholdResults.locationVerified
+                                  ? "Within Farm Boundaries"
+                                  : "Outside Farm Boundaries"
+                                : /Location: PASSED/.test(claim.note)
                                 ? "Within Farm Boundaries"
-                                : "Outside Farm Boundaries"}
+                                : /Location: FAILED/.test(claim.note)
+                                ? "Outside Farm Boundaries"
+                                : "Unknown"}
                             </p>
                           </div>
                           <div>

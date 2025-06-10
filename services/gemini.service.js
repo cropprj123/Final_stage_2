@@ -22,7 +22,7 @@ class GeminiService {
   async getDiseaseResponse(userInput) {
     try {
       const model = this.genAI.getGenerativeModel({
-        model: "gemini-1.5-pro-latest",
+        model: "gemini-1.5-flash-latest",
         generationConfig: this.generationConfig,
       });
 
@@ -39,7 +39,7 @@ class GeminiService {
   async getGeneralResponse(userInput) {
     try {
       const model = this.genAI.getGenerativeModel({
-        model: "gemini-1.5-pro-latest",
+        model: "gemini-1.5-flash-latest",
         generationConfig: this.generalConfig,
         systemInstruction: this.generalPrompt,
       });

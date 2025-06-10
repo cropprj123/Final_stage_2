@@ -1,6 +1,8 @@
 const GeminiService = require("../services/gemini.service");
 
-const geminiService = new GeminiService(process.env.GEMINI_API_KEY);
+const geminiService = new GeminiService(
+  process.env.GEMINI_API_KEY
+);
 
 // Disease-specific handler
 // In controllers/gemini.controller.js - Update disease handler
