@@ -35,7 +35,7 @@ async function main() {
   //   console.log(policy);
 
   //fromated policay data
-  const policy = await contract.getPolicy(5);
+  const policy = await contract.getPolicy(12);
   const formattedPolicy = {
     policyId: policy[0].toNumber(),
     farmerAddress: policy[1],
